@@ -2,10 +2,10 @@ import re
 import os
 from typing import Any, Tuple
 from dotenv import load_dotenv
+from pydantic import ValidationError
 
 load_dotenv()
 
-import instructor
 from schemas import TriageAnalysis
 
 CRITICAL_RED_FLAGS = re.compile(
@@ -36,16 +36,8 @@ Classify as SAFE only when the description suggests:
 - Gradual onset without acute injury
 - Pain relieved by rest or gentle movement
 
-## Allowed remediation_tags vocabulary (use ONLY these exact strings):
-stretching, strengthening, mobility, core_stability, foam_rolling, posture, eccentric_loading,
-activation, stabilization, mckenzie, pnf, release, traction, decompression, daily_routine,
-flexibility, rehabilitation, prevention, sports, running, desk_worker, range_of_motion,
-hip_flexor, posterior_chain, lateral_stability, scapula, rotator_cuff, impingement
-
-For SAFE responses: return 4-8 tags from the vocabulary above that best match the symptoms.
-For RED_FLAG responses: return an empty list for remediation_tags.
-
-Respond ONLY with the JSON object matching the required schema. No preamble."""
+For SAFE responses: populate remediation_tags with 4-8 values from the enum in the tool schema.
+For RED_FLAG responses: set remediation_tags to an empty array."""
 
 _client: Any = None
 _model: str = ""
@@ -67,22 +59,17 @@ def _build_client() -> Tuple[Any, str, str]:
 
     if provider == "anthropic":
         import anthropic
-        client = instructor.from_anthropic(anthropic.Anthropic())
-        return client, "claude-sonnet-4-6", "anthropic"
+        return anthropic.Anthropic(), "claude-sonnet-4-6", "anthropic"
 
     if provider == "deepseek":
         from openai import OpenAI
-        client = instructor.from_openai(
-            OpenAI(
-                api_key=os.environ["DEEPSEEK_API_KEY"],
-                base_url="https://api.deepseek.com",
-            )
+        return (
+            OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"),
+            "deepseek-chat",
+            "deepseek",
         )
-        return client, "deepseek-chat", "deepseek"
 
-    raise RuntimeError(
-        f"Unknown LLM_PROVIDER: {provider!r}. Valid values are 'anthropic' or 'deepseek'."
-    )
+    raise RuntimeError(f"Unknown LLM_PROVIDER: {provider!r}. Valid values: 'anthropic', 'deepseek'.")
 
 
 def _get_client() -> Tuple[Any, str, str]:
@@ -92,31 +79,75 @@ def _get_client() -> Tuple[Any, str, str]:
     return _client, _model, _provider
 
 
+def _safe_fallback() -> TriageAnalysis:
+    """Conservative fallback when LLM response fails schema validation."""
+    return TriageAnalysis(
+        safety_status="RED_FLAG",
+        perceived_mechanism="Unable to parse LLM response.",
+        linguistic_justification="Schema validation failed.",
+        remediation_tags=[],
+        empathetic_response=(
+            "We encountered an issue analyzing your symptoms. "
+            "Please try rephrasing your description, or consult a healthcare professional."
+        ),
+    )
+
+
+def _anthropic_triage(client: Any, model: str, muscle_id: str, symptom_text: str) -> TriageAnalysis:
+    payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
+    response = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        system=SYSTEM_PROMPT,
+        tools=[{
+            "name": "record_triage",
+            "description": "Record the structured triage analysis result.",
+            "input_schema": TriageAnalysis.model_json_schema(),
+        }],
+        tool_choice={"type": "tool", "name": "record_triage"},
+        messages=[{"role": "user", "content": payload}],
+    )
+    try:
+        tool_use = next(b for b in response.content if b.type == "tool_use")
+        return TriageAnalysis.model_validate(tool_use.input)
+    except (StopIteration, ValidationError):
+        return _safe_fallback()
+
+
+def _openai_triage(client: Any, model: str, muscle_id: str, symptom_text: str) -> TriageAnalysis:
+    payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": payload},
+        ],
+        tools=[{
+            "type": "function",
+            "function": {
+                "name": "record_triage",
+                "description": "Record the structured triage analysis result.",
+                "parameters": TriageAnalysis.model_json_schema(),
+            },
+        }],
+        tool_choice={"type": "function", "function": {"name": "record_triage"}},
+    )
+    try:
+        args = response.choices[0].message.tool_calls[0].function.arguments
+        return TriageAnalysis.model_validate_json(args)
+    except (IndexError, AttributeError, ValidationError):
+        return _safe_fallback()
+
+
 def tier1_regex_check(text: str) -> bool:
     return bool(CRITICAL_RED_FLAGS.search(text))
 
 
 def tier2_llm_analysis(muscle_id: str, symptom_text: str) -> TriageAnalysis:
     client, model, provider = _get_client()
-    payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
-
     if provider == "anthropic":
-        return client.messages.create(
-            model=model,
-            max_tokens=1024,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": payload}],
-            response_model=TriageAnalysis,
-        )
-
-    return client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": payload},
-        ],
-        response_model=TriageAnalysis,
-    )
+        return _anthropic_triage(client, model, muscle_id, symptom_text)
+    return _openai_triage(client, model, muscle_id, symptom_text)
 
 
 def run_triage(muscle_id: str, symptom_text: str) -> TriageAnalysis:

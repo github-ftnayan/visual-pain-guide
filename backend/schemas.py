@@ -1,6 +1,16 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal
 
+TagVocab = Literal[
+    "stretching", "strengthening", "mobility", "core_stability",
+    "foam_rolling", "posture", "eccentric_loading", "activation",
+    "stabilization", "mckenzie", "pnf", "release", "traction",
+    "decompression", "daily_routine", "flexibility", "rehabilitation",
+    "prevention", "sports", "running", "desk_worker", "range_of_motion",
+    "hip_flexor", "posterior_chain", "lateral_stability", "scapula",
+    "rotator_cuff", "impingement",
+]
+
 
 class TriageRequest(BaseModel):
     muscle_id: str
@@ -17,8 +27,8 @@ class TriageAnalysis(BaseModel):
     linguistic_justification: str = Field(
         description="Exactly which words or phrases led to this classification."
     )
-    remediation_tags: List[str] = Field(
-        description="4-8 exercise/therapy tags from the allowed vocabulary. Empty list if RED_FLAG."
+    remediation_tags: List[TagVocab] = Field(
+        description="4-8 exercise/therapy tags selected from the allowed enum values. Empty list if RED_FLAG."
     )
     empathetic_response: str = Field(
         description="Warm, professional message to the patient. Non-diagnostic."
