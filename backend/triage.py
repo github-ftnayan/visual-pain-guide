@@ -1,10 +1,11 @@
 import re
+import os
+from typing import Any, Tuple
 from dotenv import load_dotenv
 
 load_dotenv()
 
 import instructor
-import anthropic
 from schemas import TriageAnalysis
 
 CRITICAL_RED_FLAGS = re.compile(
@@ -46,14 +47,49 @@ For RED_FLAG responses: return an empty list for remediation_tags.
 
 Respond ONLY with the JSON object matching the required schema. No preamble."""
 
-_client: instructor.Instructor | None = None
+_client: Any = None
+_model: str = ""
+_provider: str = ""
 
 
-def _get_client() -> instructor.Instructor:
-    global _client
+def _build_client() -> Tuple[Any, str, str]:
+    provider = os.getenv("LLM_PROVIDER", "").lower()
+
+    if not provider:
+        if os.getenv("ANTHROPIC_API_KEY"):
+            provider = "anthropic"
+        elif os.getenv("DEEPSEEK_API_KEY"):
+            provider = "deepseek"
+        else:
+            raise RuntimeError(
+                "No LLM API key found. Set ANTHROPIC_API_KEY or DEEPSEEK_API_KEY in backend/.env"
+            )
+
+    if provider == "anthropic":
+        import anthropic
+        client = instructor.from_anthropic(anthropic.Anthropic())
+        return client, "claude-sonnet-4-6", "anthropic"
+
+    if provider == "deepseek":
+        from openai import OpenAI
+        client = instructor.from_openai(
+            OpenAI(
+                api_key=os.environ["DEEPSEEK_API_KEY"],
+                base_url="https://api.deepseek.com",
+            )
+        )
+        return client, "deepseek-chat", "deepseek"
+
+    raise RuntimeError(
+        f"Unknown LLM_PROVIDER: {provider!r}. Valid values are 'anthropic' or 'deepseek'."
+    )
+
+
+def _get_client() -> Tuple[Any, str, str]:
+    global _client, _model, _provider
     if _client is None:
-        _client = instructor.from_anthropic(anthropic.Anthropic())
-    return _client
+        _client, _model, _provider = _build_client()
+    return _client, _model, _provider
 
 
 def tier1_regex_check(text: str) -> bool:
@@ -61,11 +97,24 @@ def tier1_regex_check(text: str) -> bool:
 
 
 def tier2_llm_analysis(muscle_id: str, symptom_text: str) -> TriageAnalysis:
+    client, model, provider = _get_client()
     payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
-    return _get_client().messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": SYSTEM_PROMPT + "\n\n" + payload}],
+
+    if provider == "anthropic":
+        return client.messages.create(
+            model=model,
+            max_tokens=1024,
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": payload}],
+            response_model=TriageAnalysis,
+        )
+
+    return client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": payload},
+        ],
         response_model=TriageAnalysis,
     )
 
