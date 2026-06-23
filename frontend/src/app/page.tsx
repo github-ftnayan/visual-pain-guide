@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { AppState, TriageResponse } from "@/types";
-import MuscleSelector from "@/components/MuscleSelector";
+import BodyMapWithFallback from "@/components/BodyMapWithFallback";
 import SymptomPanel from "@/components/SymptomPanel";
 import VideoPlayer from "@/components/VideoPlayer";
 import SafetyCard from "@/components/SafetyCard";
@@ -55,18 +55,20 @@ export default function Home() {
         <header className="mb-8">
           <h1 className="text-2xl font-bold text-teal-400 tracking-tight">Visual Pain Guide</h1>
           <p className="text-slate-400 text-sm mt-1">
-            Select a muscle group, describe your symptoms, and get targeted PT video recommendations.
+            Click a muscle group, describe your symptoms, and get targeted PT video recommendations.
           </p>
         </header>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <div className="w-full lg:w-64 flex-shrink-0">
-            <MuscleSelector
+          {/* Left: interactive body map (text grid fallback on error) */}
+          <div className="flex-shrink-0 flex justify-center lg:justify-start">
+            <BodyMapWithFallback
               selectedMuscleId={selectedMuscle}
               onMuscleSelect={handleMuscleSelect}
             />
           </div>
 
+          {/* Right: symptom panel + results */}
           <div className="flex-1 flex flex-col gap-4 min-w-0">
             {(appState === "MUSCLE_SELECTED" || appState === "LOADING") && (
               <SymptomPanel
@@ -121,21 +123,12 @@ export default function Home() {
               <div className="flex items-center justify-center min-h-64">
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4">
-                    <svg
-                      className="w-8 h-8 text-slate-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
+                    <svg className="w-8 h-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
-                  <p className="text-slate-500 text-sm">Select a muscle group to get started</p>
+                  <p className="text-slate-500 text-sm">Click a muscle group on the body map to get started</p>
                 </div>
               </div>
             )}
