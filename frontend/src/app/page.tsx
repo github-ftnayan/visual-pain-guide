@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { AppState, TriageResponse } from "@/types";
-import BodyMap from "@/components/BodyMap";
+import MuscleSelector from "@/components/MuscleSelector";
 import SymptomPanel from "@/components/SymptomPanel";
 import VideoPlayer from "@/components/VideoPlayer";
 import SafetyCard from "@/components/SafetyCard";
@@ -23,19 +23,16 @@ export default function Home() {
     if (!selectedMuscle) return;
     setAppState("LOADING");
     setError(null);
-
     try {
       const res = await fetch("/api/triage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ muscle_id: selectedMuscle, symptom_text: symptomText }),
       });
-
       if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(body.detail ?? body.error ?? `Server error ${res.status}`);
+        const err = await res.json().catch(() => ({ error: "Server error" }));
+        throw new Error(err.detail ?? err.error ?? `Error ${res.status}`);
       }
-
       const data: TriageResponse = await res.json();
       setResult(data);
       setAppState(data.analysis.safety_status === "SAFE" ? "RESULT_SAFE" : "RESULT_RED_FLAG");
@@ -53,98 +50,103 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen px-4 py-8 gap-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-teal-400">Visual Pain Guide</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Select a muscle group, describe your symptoms, receive evidence-based PT video recommendations.
-        </p>
-      </div>
+    <main className="min-h-screen p-6 lg:p-10">
+      <div className="max-w-5xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-teal-400 tracking-tight">Visual Pain Guide</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Select a muscle group, describe your symptoms, and get targeted PT video recommendations.
+          </p>
+        </header>
 
-      {/* Disclaimer banner */}
-      <div className="w-full max-w-5xl bg-amber-950 border border-amber-700 rounded-lg px-4 py-2 text-xs text-amber-300 text-center">
-        For educational purposes only. This is not medical advice. Always consult a licensed healthcare professional.
-      </div>
-
-      {/* Main layout */}
-      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-5xl items-start justify-center">
-        {/* Body map */}
-        <div className="flex-shrink-0 lg:sticky lg:top-8">
-          <BodyMap selectedMuscleId={selectedMuscle} onMuscleSelect={handleMuscleSelect} />
-        </div>
-
-        {/* Right panel */}
-        <div className="flex flex-col gap-4 flex-1 min-w-0 w-full">
-          {appState === "IDLE" && (
-            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 text-slate-400 text-sm text-center">
-              Click a muscle group on the diagram or select one from the labels to begin.
-            </div>
-          )}
-
-          {(appState === "MUSCLE_SELECTED" || appState === "LOADING") && selectedMuscle && (
-            <SymptomPanel
-              muscleId={selectedMuscle}
-              onSubmit={handleSubmit}
-              isLoading={appState === "LOADING"}
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <MuscleSelector
+              selectedMuscleId={selectedMuscle}
+              onMuscleSelect={handleMuscleSelect}
             />
-          )}
+          </div>
 
-          {error && (
-            <div className="bg-red-950 border border-red-700 rounded-lg px-4 py-3 text-sm text-red-300">
-              {error}
-            </div>
-          )}
+          <div className="flex-1 flex flex-col gap-4 min-w-0">
+            {(appState === "MUSCLE_SELECTED" || appState === "LOADING") && (
+              <SymptomPanel
+                muscleId={selectedMuscle!}
+                onSubmit={handleSubmit}
+                isLoading={appState === "LOADING"}
+              />
+            )}
 
-          {appState === "RESULT_SAFE" && result && (
-            <div className="flex flex-col gap-4">
-              <div className="bg-teal-950 border border-teal-700 rounded-xl p-4">
-                <p className="text-teal-300 font-medium leading-relaxed">
-                  {result.analysis.empathetic_response}
-                </p>
-                <p className="text-slate-400 text-xs mt-3">
-                  <span className="font-semibold text-slate-300">Likely mechanism: </span>
-                  {result.analysis.perceived_mechanism}
-                </p>
-                {result.analysis.remediation_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {result.analysis.remediation_tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs bg-teal-900 text-teal-300 border border-teal-700 px-2 py-0.5 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+            {error && (
+              <div className="bg-red-950 border border-red-700 rounded-lg p-3 text-sm text-red-300">
+                {error}
               </div>
+            )}
 
-              {result.videos.map((video) => (
-                <VideoPlayer key={video.id} video={video} />
-              ))}
+            {appState === "RESULT_SAFE" && result && (
+              <>
+                <div className="bg-teal-950/60 border border-teal-800 rounded-xl p-4">
+                  <p className="text-teal-300 text-sm leading-relaxed">
+                    {result.analysis.empathetic_response}
+                  </p>
+                  <p className="text-slate-500 text-xs mt-2">
+                    <span className="text-slate-400 font-medium">Mechanism: </span>
+                    {result.analysis.perceived_mechanism}
+                  </p>
+                </div>
+                {result.videos.map((video) => (
+                  <VideoPlayer key={video.id} video={video} />
+                ))}
+                <button
+                  onClick={handleReset}
+                  className="text-slate-500 text-xs underline hover:text-slate-300 self-start"
+                >
+                  ← Start over
+                </button>
+              </>
+            )}
 
-              <button
-                onClick={handleReset}
-                className="text-slate-500 text-sm underline hover:text-slate-300 self-start"
-              >
-                Start over
-              </button>
-            </div>
-          )}
+            {appState === "RESULT_RED_FLAG" && result && (
+              <>
+                <SafetyCard message={result.analysis.empathetic_response} />
+                <button
+                  onClick={handleReset}
+                  className="text-slate-500 text-xs underline hover:text-slate-300 self-start"
+                >
+                  ← Start over
+                </button>
+              </>
+            )}
 
-          {appState === "RESULT_RED_FLAG" && result && (
-            <div className="flex flex-col gap-4">
-              <SafetyCard message={result.analysis.empathetic_response} />
-              <button
-                onClick={handleReset}
-                className="text-slate-500 text-sm underline hover:text-slate-300 self-start"
-              >
-                Start over
-              </button>
-            </div>
-          )}
+            {appState === "IDLE" && (
+              <div className="flex items-center justify-center min-h-64">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-slate-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-slate-500 text-sm">Select a muscle group to get started</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
+        <footer className="mt-12 pt-6 border-t border-slate-800">
+          <p className="text-slate-600 text-xs text-center">
+            This tool does not provide medical advice. Always consult a licensed healthcare provider for diagnosis and treatment.
+          </p>
+        </footer>
       </div>
     </main>
   );

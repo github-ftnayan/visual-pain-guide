@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Visual Pain Guide",
-  description: "Physical therapy video recommendations for musculoskeletal pain",
+  description: "Physical therapy video recommendations based on your symptoms",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -6,7 +6,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "sTb7jFhbSwQ",
       "start_time": 45,
-      "tags": ["lower_back", "stretching", "mobility", "daily_routine", "pain_relief", "beginner"]
+      "tags": ["stretching", "daily_routine", "mobility", "decompression", "posture"]
     },
     {
       "id": "lum-002",
@@ -14,7 +14,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "kFBJJJUNEiA",
       "start_time": 30,
-      "tags": ["lumbar_disc", "mckenzie", "extension", "decompression", "rehabilitation", "clinical"]
+      "tags": ["mckenzie", "rehabilitation", "range_of_motion", "strengthening", "decompression"]
     },
     {
       "id": "lum-003",
@@ -22,7 +22,7 @@
       "creator": "Physiotutors",
       "youtube_id": "4BOTvaRaDjI",
       "start_time": 60,
-      "tags": ["core_stability", "prevention", "strengthening", "lower_back", "posture", "rehabilitation"]
+      "tags": ["core_stability", "strengthening", "prevention", "posture", "rehabilitation"]
     }
   ],
   "trapezius_spine": [
@@ -32,7 +32,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "VxpCkPKdKaA",
       "start_time": 20,
-      "tags": ["trapezius", "neck", "shoulder", "tension", "stretching", "release", "upper_body"]
+      "tags": ["release", "stretching", "range_of_motion", "posture", "desk_worker"]
     },
     {
       "id": "trap-002",
@@ -40,7 +40,7 @@
       "creator": "Physiotutors",
       "youtube_id": "N2oSO3cQGGE",
       "start_time": 45,
-      "tags": ["trapezius", "strengthening", "posture", "scapula", "upper_body", "rehabilitation"]
+      "tags": ["strengthening", "posture", "scapula", "stabilization", "rehabilitation"]
     }
   ],
   "hamstrings": [
@@ -50,7 +50,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "RsNMJO8N1U0",
       "start_time": 30,
-      "tags": ["hamstrings", "stretching", "strain", "recovery", "flexibility", "posterior_chain"]
+      "tags": ["stretching", "flexibility", "rehabilitation", "posterior_chain", "daily_routine"]
     },
     {
       "id": "ham-002",
@@ -58,7 +58,7 @@
       "creator": "Physiotutors",
       "youtube_id": "1Tq3QdYUuHs",
       "start_time": 15,
-      "tags": ["hamstrings", "eccentric_loading", "strengthening", "prevention", "sports", "posterior_chain"]
+      "tags": ["eccentric_loading", "strengthening", "prevention", "sports", "rehabilitation"]
     },
     {
       "id": "ham-003",
@@ -66,7 +66,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "9oSgEXzH6sE",
       "start_time": 25,
-      "tags": ["hamstrings", "pnf", "stretching", "flexibility", "clinical", "mobility"]
+      "tags": ["pnf", "stretching", "flexibility", "mobility", "range_of_motion"]
     }
   ],
   "quadriceps": [
@@ -76,7 +76,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "mPEUUoGGKVk",
       "start_time": 40,
-      "tags": ["quadriceps", "knee", "strengthening", "rehabilitation", "activation", "VMO"]
+      "tags": ["strengthening", "rehabilitation", "activation", "prevention"]
     },
     {
       "id": "quad-002",
@@ -84,7 +84,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "UGEpQ1X2P4c",
       "start_time": 10,
-      "tags": ["quadriceps", "stretching", "hip_flexor", "tightness", "mobility", "flexibility"]
+      "tags": ["stretching", "hip_flexor", "mobility", "range_of_motion", "flexibility"]
     }
   ],
   "glutes": [
@@ -94,7 +94,7 @@
       "creator": "Physiotutors",
       "youtube_id": "YBqMtOETfkw",
       "start_time": 35,
-      "tags": ["glutes", "activation", "lower_back", "strengthening", "rehabilitation", "posterior_chain"]
+      "tags": ["activation", "core_stability", "rehabilitation", "strengthening", "posture"]
     },
     {
       "id": "glut-002",
@@ -102,15 +102,15 @@
       "creator": "Bob & Brad",
       "youtube_id": "LM8XhLac3Hc",
       "start_time": 20,
-      "tags": ["glutes", "strengthening", "eccentric_loading", "sports", "rehabilitation", "posterior_chain"]
+      "tags": ["strengthening", "stabilization", "sports", "prevention", "rehabilitation"]
     },
     {
       "id": "glut-003",
-      "title": "Piriformis and Glute Stretch for Sciatic Relief",
+      "title": "Piriformis and Glute Stretch for Hip Tightness",
       "creator": "Dr. Jo",
       "youtube_id": "kdFKYPnJgaQ",
       "start_time": 55,
-      "tags": ["glutes", "piriformis", "stretching", "mobility", "release", "flexibility"]
+      "tags": ["stretching", "release", "flexibility", "mobility", "range_of_motion"]
     }
   ],
   "cervical_spine": [
@@ -120,7 +120,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "k3HFdGR1KXQ",
       "start_time": 30,
-      "tags": ["cervical_spine", "neck", "traction", "decompression", "pain_relief", "clinical"]
+      "tags": ["traction", "decompression", "rehabilitation", "range_of_motion", "release"]
     },
     {
       "id": "cerv-002",
@@ -128,7 +128,7 @@
       "creator": "Physiotutors",
       "youtube_id": "0oqyPJkQ3Qg",
       "start_time": 20,
-      "tags": ["cervical_spine", "neck", "strengthening", "posture", "stabilization", "rehabilitation"]
+      "tags": ["strengthening", "stabilization", "posture", "activation", "rehabilitation"]
     }
   ],
   "calves": [
@@ -138,7 +138,7 @@
       "creator": "Physiotutors",
       "youtube_id": "Vv_6sLAKJy8",
       "start_time": 15,
-      "tags": ["calves", "eccentric_loading", "strain", "rehabilitation", "strengthening", "prevention"]
+      "tags": ["eccentric_loading", "rehabilitation", "strengthening", "prevention", "sports"]
     },
     {
       "id": "calf-002",
@@ -146,7 +146,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "m_6FqGJdmCI",
       "start_time": 10,
-      "tags": ["calves", "stretching", "flexibility", "mobility", "daily_routine", "beginner"]
+      "tags": ["stretching", "flexibility", "mobility", "range_of_motion", "daily_routine"]
     }
   ],
   "shoulder": [
@@ -156,7 +156,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "owV2lQGJIBc",
       "start_time": 60,
-      "tags": ["shoulder", "rotator_cuff", "strengthening", "rehabilitation", "stabilization", "clinical"]
+      "tags": ["rotator_cuff", "strengthening", "rehabilitation", "stabilization", "prevention"]
     },
     {
       "id": "shldr-002",
@@ -164,7 +164,7 @@
       "creator": "Physiotutors",
       "youtube_id": "XCJ53vKPmrg",
       "start_time": 45,
-      "tags": ["shoulder", "posture", "scapula", "rehabilitation", "strengthening", "activation"]
+      "tags": ["impingement", "posture", "scapula", "rehabilitation", "activation"]
     },
     {
       "id": "shldr-003",
@@ -172,7 +172,7 @@
       "creator": "Dr. Jo",
       "youtube_id": "E_gXMFH0VMg",
       "start_time": 30,
-      "tags": ["shoulder", "mobility", "stretching", "range_of_motion", "rehabilitation", "flexibility"]
+      "tags": ["stretching", "range_of_motion", "mobility", "rehabilitation", "release"]
     }
   ],
   "hip_flexors": [
@@ -182,7 +182,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "YRZKbzFVuIo",
       "start_time": 20,
-      "tags": ["hip_flexors", "release", "stretching", "posture", "desk_worker", "tightness", "flexibility"]
+      "tags": ["hip_flexor", "stretching", "release", "desk_worker", "posture", "mobility"]
     },
     {
       "id": "hipf-002",
@@ -190,7 +190,7 @@
       "creator": "Physiotutors",
       "youtube_id": "3mFG4JjEZdc",
       "start_time": 35,
-      "tags": ["hip_flexors", "strengthening", "stabilization", "rehabilitation", "core_stability", "activation"]
+      "tags": ["hip_flexor", "strengthening", "stabilization", "rehabilitation", "activation"]
     }
   ],
   "IT_band": [
@@ -200,7 +200,7 @@
       "creator": "Bob & Brad",
       "youtube_id": "C6TGZPVQ-00",
       "start_time": 25,
-      "tags": ["IT_band", "foam_rolling", "stretching", "mobility", "lateral_stability", "prevention"]
+      "tags": ["foam_rolling", "stretching", "mobility", "running", "lateral_stability"]
     },
     {
       "id": "itb-002",
@@ -208,7 +208,7 @@
       "creator": "Physiotutors",
       "youtube_id": "Y7NHHidO1wM",
       "start_time": 40,
-      "tags": ["IT_band", "strengthening", "lateral_stability", "activation", "rehabilitation", "sports"]
+      "tags": ["strengthening", "lateral_stability", "stabilization", "running", "prevention"]
     }
   ]
 }

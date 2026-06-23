@@ -1,5 +1,12 @@
 export type SafetyStatus = "SAFE" | "RED_FLAG";
 
+export type AppState =
+  | "IDLE"
+  | "MUSCLE_SELECTED"
+  | "LOADING"
+  | "RESULT_SAFE"
+  | "RESULT_RED_FLAG";
+
 export interface TriageRequest {
   muscle_id: string;
   symptom_text: string;
@@ -25,27 +32,4 @@ export interface VideoMatch {
 export interface TriageResponse {
   analysis: TriageAnalysis;
   videos: VideoMatch[];
-}
-
-export type AppState =
-  | "IDLE"
-  | "MUSCLE_SELECTED"
-  | "LOADING"
-  | "RESULT_SAFE"
-  | "RESULT_RED_FLAG";
-
-export interface MuscleGroupDef {
-  id: string;
-  label: string;
-  type: "ellipse" | "rect" | "path";
-  // ellipse
-  cx?: number;
-  cy?: number;
-  rx?: number;
-  ry?: number;
-  // rect
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
 }

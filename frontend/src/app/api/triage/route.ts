@@ -10,15 +10,13 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30_000),
     });
 
     if (!backendResponse.ok) {
-      const errorText = await backendResponse.text();
-      return NextResponse.json(
-        { error: `Backend error ${backendResponse.status}`, detail: errorText },
-        { status: backendResponse.status }
-      );
+      const errorData = await backendResponse
+        .json()
+        .catch(() => ({ detail: "Backend error" }));
+      return NextResponse.json(errorData, { status: backendResponse.status });
     }
 
     const data = await backendResponse.json();
