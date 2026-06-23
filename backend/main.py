@@ -5,9 +5,10 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from schemas import TriageRequest, TriageResponse
+from schemas import TriageRequest, TriageResponse, EmbedRequest, EmbedResponse
 from triage import run_triage
 from matcher import match_videos
+from embedder import embed_and_store
 
 app = FastAPI(title="Visual Pain Guide API", version="1.0.0")
 
@@ -32,6 +33,17 @@ async def triage_endpoint(request: TriageRequest):
         videos = match_videos(request.muscle_id, analysis.remediation_tags)
 
     return TriageResponse(analysis=analysis, videos=videos)
+
+
+@app.post("/api/v1/admin/embed", response_model=EmbedResponse)
+async def embed_endpoint(request: EmbedRequest):
+    try:
+        chunks_stored = embed_and_store(request.file_path)
+        return EmbedResponse(status="ok", chunks_stored=chunks_stored, collection="pt_knowledge")
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

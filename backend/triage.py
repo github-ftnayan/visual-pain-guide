@@ -16,7 +16,7 @@ CRITICAL_RED_FLAGS = re.compile(
     re.IGNORECASE,
 )
 
-SYSTEM_PROMPT = """You are a conservative physical therapy safety screener. Analyze the patient's self-reported musculoskeletal symptom description and determine whether it is safe to recommend home PT exercises.
+_BASE_SYSTEM_PROMPT = """You are a conservative physical therapy safety screener. Analyze the patient's self-reported musculoskeletal symptom description and determine whether it is safe to recommend home PT exercises.
 
 ## Classification Rules
 
@@ -38,6 +38,19 @@ Classify as SAFE only when the description suggests:
 
 For SAFE responses: populate remediation_tags with 4-8 values from the enum in the tool schema.
 For RED_FLAG responses: set remediation_tags to an empty array."""
+
+
+def _build_system_prompt(rag_context: str) -> str:
+    if not rag_context:
+        return _BASE_SYSTEM_PROMPT
+    return (
+        _BASE_SYSTEM_PROMPT
+        + "\n\n## Reference Knowledge (from PT clinical guide)\n"
+        + rag_context
+        + "\n\nUse the above reference material to inform your analysis. "
+        + "Prioritize it over general knowledge when assessing mechanism and remediation."
+    )
+
 
 _client: Any = None
 _model: str = ""
@@ -80,7 +93,6 @@ def _get_client() -> Tuple[Any, str, str]:
 
 
 def _safe_fallback() -> TriageAnalysis:
-    """Conservative fallback when LLM response fails schema validation."""
     return TriageAnalysis(
         safety_status="RED_FLAG",
         perceived_mechanism="Unable to parse LLM response.",
@@ -93,12 +105,15 @@ def _safe_fallback() -> TriageAnalysis:
     )
 
 
-def _anthropic_triage(client: Any, model: str, muscle_id: str, symptom_text: str) -> TriageAnalysis:
+def _anthropic_triage(
+    client: Any, model: str, muscle_id: str, symptom_text: str, rag_context: str
+) -> TriageAnalysis:
     payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
+    system_prompt = _build_system_prompt(rag_context)
     response = client.messages.create(
         model=model,
         max_tokens=1024,
-        system=SYSTEM_PROMPT,
+        system=system_prompt,
         tools=[{
             "name": "record_triage",
             "description": "Record the structured triage analysis result.",
@@ -114,12 +129,15 @@ def _anthropic_triage(client: Any, model: str, muscle_id: str, symptom_text: str
         return _safe_fallback()
 
 
-def _openai_triage(client: Any, model: str, muscle_id: str, symptom_text: str) -> TriageAnalysis:
+def _openai_triage(
+    client: Any, model: str, muscle_id: str, symptom_text: str, rag_context: str
+) -> TriageAnalysis:
     payload = f"Muscle group: {muscle_id}\nSymptom description: {symptom_text}"
+    system_prompt = _build_system_prompt(rag_context)
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": payload},
         ],
         tools=[{
@@ -143,11 +161,11 @@ def tier1_regex_check(text: str) -> bool:
     return bool(CRITICAL_RED_FLAGS.search(text))
 
 
-def tier2_llm_analysis(muscle_id: str, symptom_text: str) -> TriageAnalysis:
+def tier2_llm_analysis(muscle_id: str, symptom_text: str, rag_context: str = "") -> TriageAnalysis:
     client, model, provider = _get_client()
     if provider == "anthropic":
-        return _anthropic_triage(client, model, muscle_id, symptom_text)
-    return _openai_triage(client, model, muscle_id, symptom_text)
+        return _anthropic_triage(client, model, muscle_id, symptom_text, rag_context)
+    return _openai_triage(client, model, muscle_id, symptom_text, rag_context)
 
 
 def run_triage(muscle_id: str, symptom_text: str) -> TriageAnalysis:
@@ -164,4 +182,9 @@ def run_triage(muscle_id: str, symptom_text: str) -> TriageAnalysis:
                 "Your safety comes first — please seek professional care before attempting any self-treatment."
             ),
         )
-    return tier2_llm_analysis(muscle_id, symptom_text)
+
+    # Retrieve relevant PT knowledge before calling the LLM (gracefully skipped if not yet seeded)
+    from retriever import retrieve_context
+    rag_context = retrieve_context(muscle_id, symptom_text)
+
+    return tier2_llm_analysis(muscle_id, symptom_text, rag_context)

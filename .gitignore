@@ -5,6 +5,10 @@ backend/__pycache__/
 backend/**/__pycache__/
 backend/*.pyc
 
+# RAG artifacts (generated at runtime — do not commit)
+backend/data/chroma_db/
+backend/data/bm25_corpus.json
+
 # Frontend
 frontend/.env.local
 frontend/.env*.local

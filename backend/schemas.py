@@ -47,3 +47,13 @@ class VideoMatch(BaseModel):
 class TriageResponse(BaseModel):
     analysis: TriageAnalysis
     videos: List[VideoMatch]
+
+
+class EmbedRequest(BaseModel):
+    file_path: str
+
+
+class EmbedResponse(BaseModel):
+    status: str
+    chunks_stored: int
+    collection: str
